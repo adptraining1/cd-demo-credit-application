@@ -72,7 +72,7 @@ public class CreditApplicationForm {
     }
 
     public BigDecimal getMonthlyPayment() {
-        return this.amount.divide(new BigDecimal(this.getTerm()));
+        return this.amount.divide(new BigDecimal(this.getTerm()),0, BigDecimal.ROUND_HALF_UP);
     }
 
 
