@@ -1,2 +1,2 @@
 # cd-demo-credit-application
-Credit Application
+Central starting point for the application of credits
