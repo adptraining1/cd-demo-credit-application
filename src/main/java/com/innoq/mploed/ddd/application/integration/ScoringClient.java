@@ -1,5 +1,8 @@
 package com.innoq.mploed.ddd.application.integration;
 
+import com.codahale.metrics.Meter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import com.innoq.mploed.ddd.application.domain.CreditApplicationForm;
 import com.innoq.mploed.ddd.application.domain.Customer;
 import com.innoq.mploed.ddd.scoring.shared.ScoringInput;
@@ -11,8 +14,11 @@ import org.springframework.stereotype.Service;
 public class ScoringClient {
     private ScoringService scoringService;
 
-    public ScoringClient(ScoringService scoringService) {
+    private Timer scoringTimer;
+
+    public ScoringClient(ScoringService scoringService, MetricRegistry metricRegistry) {
         this.scoringService = scoringService;
+        this.scoringTimer = metricRegistry.timer("scoring-times");
 
     }
 
@@ -26,7 +32,16 @@ public class ScoringClient {
         scoringInput.setLastName(customer.getLastName());
         scoringInput.setStreet(customer.getStreet());
         scoringInput.setPostCode(customer.getPostCode());
-        return scoringService.performScoring(scoringInput);
+        ScoringResult scoringResult = null;
+        Timer.Context timer = scoringTimer.time();
+        try {
+            scoringResult = scoringService.performScoring(scoringInput);
+        } finally {
+            timer.stop();
+        }
+
+
+        return scoringResult;
     }
 
 }
