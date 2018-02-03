@@ -1,5 +1,7 @@
 package com.innoq.mploed.ddd.application.controller;
 
+import com.codahale.metrics.Histogram;
+import com.codahale.metrics.MetricRegistry;
 import com.innoq.mploed.ddd.application.domain.CreditApplicationForm;
 import com.innoq.mploed.ddd.application.domain.Customer;
 import com.innoq.mploed.ddd.application.events.CreditApplicationApprovedEvent;
@@ -33,7 +35,7 @@ public class CreditApplicationController {
 
     private EventPublisher eventPublisher;
 
-
+    private Histogram earningsHistogram;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CreditApplicationController.class);
 
@@ -41,11 +43,13 @@ public class CreditApplicationController {
     public CreditApplicationController(CreditApplicationFormRespository creditApplicationFormRespository,
                                        CustomerClient customerClient,
                                        ScoringClient scoringClient,
-                                       EventPublisher eventPublisher) {
+                                       EventPublisher eventPublisher,
+                                       MetricRegistry metricRegistry) {
         this.creditApplicationFormRespository = creditApplicationFormRespository;
         this.customerClient = customerClient;
         this.scoringClient = scoringClient;
         this.eventPublisher = eventPublisher;
+        this.earningsHistogram = metricRegistry.histogram("earnings");
     }
 
     @RequestMapping(method = RequestMethod.GET)
@@ -58,6 +62,7 @@ public class CreditApplicationController {
     public String saveStepOne(@ModelAttribute ProcessContainer processContainer, Model model) {
         CreditApplicationForm savedCreditApplication = creditApplicationFormRespository.saveAndFlush(processContainer.getCreditApplicationForm());
         processContainer.setCreditApplicationForm(savedCreditApplication);
+        earningsHistogram.update(processContainer.getCreditApplicationForm().getSelfDisclosure().getEarnings().sum());
         model.addAttribute("processContainer", processContainer);
         return "stepTwo";
     }
