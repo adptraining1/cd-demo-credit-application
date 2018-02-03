@@ -5,7 +5,7 @@ applications:
   timeout: 180
   path: target/cd-credit-application-0.1.0.jar
   services:
-      - mysql-credit-application
+      - mysql-credit-application-db
       - redis-pubsub
   env:
     scoringServer: https://mploed-scoring.cfapps.io/
