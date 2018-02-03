@@ -104,4 +104,9 @@ public class CreditApplicationController {
 
         return "scoringResult";
     }
+
+    @RequestMapping(method = RequestMethod.DELETE)
+    public void deleteEverything() {
+        creditApplicationFormRespository.deleteAll();
+    }
 }
